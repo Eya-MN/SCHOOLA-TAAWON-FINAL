@@ -246,6 +246,13 @@ exports.markAsRead = async (req, res) => {
 
 exports.getUnreadCount = async (req, res) => {
     try {
+        const currentUserId = (req.user && req.user.userId) ? req.user.userId.toString() : null;
+        if (!currentUserId) {
+            return res.status(401).json({
+                message: "Utilisateur non authentifié"
+            });
+        }
+
         const conversations = await Conversation.find({
             participants: req.user.userId
         })
@@ -263,8 +270,18 @@ exports.getUnreadCount = async (req, res) => {
             if (conv.lastMessage) {
                 const lastMsg = conv.lastMessage;
                 // Si le dernier message n'est pas de moi ET je ne l'ai pas lu
-                if (lastMsg.sender.toString() !== req.user.userId && 
-                    !lastMsg.readBy.includes(req.user.userId)) {
+                const senderId = lastMsg.sender
+                    ? (lastMsg.sender._id ? lastMsg.sender._id.toString() : lastMsg.sender.toString())
+                    : null;
+
+                const readBy = Array.isArray(lastMsg.readBy) ? lastMsg.readBy : [];
+                const hasRead = readBy.some((id) => {
+                    if (!id) return false;
+                    const idStr = id._id ? id._id.toString() : id.toString();
+                    return idStr === currentUserId;
+                });
+
+                if (senderId && senderId !== currentUserId && !hasRead) {
                     unreadCount++;
                 }
             }

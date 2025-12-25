@@ -6,11 +6,20 @@ exports.register = async (req, res) => {
         console.log('📝 Inscription:', req.body.username);
         const { username, email, password, city } = req.body;
 
+        const normalizedEmail = String(email || '').trim().toLowerCase();
+        const normalizedUsername = String(username || '').trim();
+
+        if (!normalizedEmail || !password || !normalizedUsername || !city) {
+            return res.status(400).json({
+                message: 'Champs requis manquants'
+            });
+        }
+
         // Vérifier si l'utilisateur existe déjà
-        const userExists = await User.findOne({ $or: [{ email }, { username }] });
+        const userExists = await User.findOne({ $or: [{ email: normalizedEmail }, { username: normalizedUsername }] });
         if (userExists) {
             return res.status(400).json({ 
-                message: userExists.email === email 
+                message: userExists.email === normalizedEmail 
                     ? 'Cet email est déjà utilisé' 
                     : "Ce nom d'utilisateur est déjà pris"
             });
@@ -18,8 +27,8 @@ exports.register = async (req, res) => {
 
         // Créer le nouvel utilisateur
         const user = new User({
-            username,
-            email,
+            username: normalizedUsername,
+            email: normalizedEmail,
             password,
             city
         });
@@ -64,8 +73,15 @@ exports.login = async (req, res) => {
         console.log('🔐 Connexion:', req.body.email);
         const { email, password } = req.body;
 
+        const normalizedEmail = String(email || '').trim().toLowerCase();
+        if (!normalizedEmail || !password) {
+            return res.status(400).json({
+                message: 'Email et mot de passe requis'
+            });
+        }
+
         // Trouver l'utilisateur
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email: normalizedEmail });
         if (!user) {
             return res.status(401).json({
                 message: 'Email ou mot de passe incorrect'
