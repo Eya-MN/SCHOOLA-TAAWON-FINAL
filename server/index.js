@@ -24,6 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 
+
 // Connect to MongoDB Local (Compass)
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/schoola-taawon';
 

@@ -398,6 +398,99 @@ Ce livrable présente un site web fonctionnel complet répondant aux exigences d
 - ✅ **Backend robuste** : Node.js + Express + MongoDB
 - ✅ **Fonctionnalités avancées** : Temps réel, upload, sécurité
 - ✅ **Responsive design** : Adapté tous supports
+
+---
+
+## 🧩 Cas particulier : Présence d’un backend (instructions d’évaluation)
+
+L’application comprend un backend Node.js/Express connecté à MongoDB (Atlas). Cette section fournit tout le nécessaire pour l’exécuter et le tester rapidement, en particulier avec MongoDB Atlas qui requiert une configuration réseau spécifique.
+
+### 🔧 Prérequis backend
+- Node.js 16+ et npm
+- Compte MongoDB Atlas (ou instance MongoDB locale)
+- Navigateur moderne (Chrome, Firefox, Edge)
+
+### ⚙️ Configuration de l’environnement (server/.env)
+Créer ou vérifier le fichier `server/.env` avec les variables suivantes (exemple de format, sans secret) :
+
+```
+PORT=5001
+# URI Atlas — remplacez <USER>, <PASSWORD>, <HOST>
+MONGODB_URI=mongodb+srv://<USER>:<PASSWORD>@<HOST>/schoola-taawon?retryWrites=true&w=majority&appName=Cluster0
+
+# Clé JWT arbitraire pour tests
+JWT_SECRET=schoola-taawon-secret-key-2025
+
+# Optionnel: origine autorisée côté client
+CLIENT_URL=http://localhost:3000
+```
+
+Notes:
+- Le nom de base utilisé est `schoola-taawon` (inclus dans l’URI).
+- Le paramètre `appName=Cluster0` est recommandé pour Atlas.
+- Ne pas commiter de mots de passe en clair dans un dépôt public.
+
+### 🌐 Autoriser l’IP sur MongoDB Atlas
+1) Atlas > Network Access > Add IP Address > Add Current IP Address
+2) Attendre 1–2 minutes que la règle s’applique
+3) Option de dev (temporaire): `0.0.0.0/0` (à retirer ensuite)
+
+### ▶️ Démarrer le backend (développement)
+Dans le dossier `server/` :
+
+```
+npm install
+npm run dev   # lance nodemon sur http://localhost:5001
+```
+
+Production (optionnel) :
+```
+npm start
+```
+
+PM2 (optionnel) :
+```
+pm2 start ecosystem.config.json --env production
+```
+
+### 🔌 Ports utilisés
+- Backend API: http://localhost:5001
+- Frontend: http://localhost:3000 (npm start)
+
+### 🧪 Endpoints/API rapides pour tests
+- Annonces (public): `GET http://localhost:5001/api/listings`
+- Auth:
+  - `POST http://localhost:5001/api/auth/register`
+  - `POST http://localhost:5001/api/auth/login`
+- Messagerie:
+  - `GET http://localhost:5001/api/messages/conversations`
+  - `GET http://localhost:5001/api/messages/unread-count`
+
+### 🖼️ Uploads de fichiers
+- Upload via `multer` (diskStorage)
+- Stockage local: `server/uploads/`
+- Exposition statique: `http://localhost:5001/uploads/<fichier>`
+
+### 🧵 Socket.IO (temps réel)
+- Servi sur le même host/port que l’API
+- Le client s’y connecte automatiquement (auth: `user.id`)
+
+### 🛠️ Dépannage Atlas (erreurs fréquentes)
+- « Could not connect to any servers in your MongoDB Atlas cluster »
+  - Vérifier l’IP whitelist
+  - Vérifier `MONGODB_URI` (USER/PASSWORD/HOST corrects et base présente)
+- « querySrv ENOTFOUND _mongodb._tcp.<host> »
+  - Hôte Atlas incorrect (copier-coller l’URI depuis Atlas)
+- Erreur 500 `/api/messages/unread-count`
+  - Géré dans ce projet (normalisation d’IDs peuplés vs strings)
+
+### ✅ Procédure de test (recommandée)
+1) Configurer `server/.env` avec votre URI Atlas et `JWT_SECRET`
+2) Autoriser votre IP sur Atlas
+3) Démarrer backend: `cd server && npm install && npm run dev`
+4) Démarrer frontend: `cd client && npm install && npm start`
+5) Ouvrir `http://localhost:3000`
+6) Créer 2 comptes et tester: Auth, CRUD annonces (avec images), Favoris, Messagerie (A→B, B→A), Notifications
 - ✅ **Code qualité** : Structure organisée, bonnes pratiques
 
 ### Technologies Maîtrisées
@@ -413,4 +506,4 @@ Ce livrable présente un site web fonctionnel complet répondant aux exigences d
 **Version :** 1.0.0
 **Statut :** ✅ Prêt pour production
 
-*Ce projet démontre notre capacité à développer une application web complète de A à Z, en appliquant les meilleures pratiques du développement moderne.*
+
